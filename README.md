@@ -57,7 +57,7 @@
 
 ---
 
-## 🧠 Mimari Manifesto: Veri Nasıl Havada Taşınır?
+## 🧠 Mimari Yapı: Veri Nasıl Havada Taşınır?
 
 Sistem, geleneksel bir REST API veya SQL/NoSQL veritabanı yerine **tarayıcı belleği ve URL fragment identifier (`#`)** mekanizmasını bir veri depolama birimi gibi kullanır:
 
