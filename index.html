@@ -487,12 +487,6 @@
                     <input type="text" id="inputCafeTitle" class="input-text" value="Kadıköy Coffee Co.">
                 </div>
 
-                <div class="field-block">
-                    <label class="field-label">Canlı Web / Yayın Adresiniz (Opsiyonel)</label>
-                    <input type="text" id="inputLiveUrl" class="input-text" placeholder="Örn: https://kullanici.github.io/menumatik/" value="">
-                    <span style="font-size: 11px; color: var(--text-ghost);">Boş bırakılırsa telefonlar için doğrudan metin menü paketi oluşturulur.</span>
-                </div>
-
                 <div class="cat-nav">
                     <button type="button" class="cat-btn active" id="tabYiyecek" onclick="switchTab('yiyecek')">🍔 Yiyecek (<span id="numYiyecek">0</span>/10)</button>
                     <button type="button" class="cat-btn" id="tabIcecek" onclick="switchTab('icecek')">☕ İçecek (<span id="numIcecek">0</span>/10)</button>
@@ -578,6 +572,9 @@
     <div id="customerApp"></div>
 
     <script>
+        // Sabit Canlı Vercel Adresi
+        var VERCEL_BASE_URL = "https://menu-matik.vercel.app/";
+
         var store = {
             title: "Kadıköy Coffee Co.",
             categories: {
@@ -594,14 +591,14 @@
                 ]
             },
             currentTab: 'yiyecek',
-            editingIdx: -1 // Düzenleme modu indeksi
+            editingIdx: -1
         };
 
         var qrInstance = null;
 
         function switchTab(tabKey) {
             store.currentTab = tabKey;
-            store.editingIdx = -1; // Sekme değişince düzenlemeyi kapat
+            store.editingIdx = -1;
             var tabs = ['yiyecek', 'icecek', 'tatli'];
             for (var i = 0; i < tabs.length; i++) {
                 var el = document.getElementById('tab' + tabs[i].charAt(0).toUpperCase() + tabs[i].slice(1));
@@ -627,7 +624,6 @@
                 var row = document.createElement('div');
                 row.className = 'item-row';
 
-                // Eğer düzenleme modundaysa inputları aç
                 if (store.editingIdx === i) {
                     row.innerHTML = 
                         '<div class="item-edit-inline">' +
@@ -717,13 +713,10 @@
             renderList();
         }
 
-        // ULTRA KOMPAKT QR MOTORU
+        // ULTRA KOMPAKT QR MOTORU (VERCEL DOMAINİNE KİLİTLİ)
         function generateQR() {
             var cafeInput = document.getElementById('inputCafeTitle');
             store.title = cafeInput ? cafeInput.value.trim() : "Kafe Menüsü";
-
-            var liveUrlInput = document.getElementById('inputLiveUrl');
-            var customBase = liveUrlInput ? liveUrlInput.value.trim() : "";
 
             function pack(arr) {
                 return arr.map(function(x) { return x.name.replace(/[:;,]/g, '') + ':' + x.price; }).join(',');
@@ -734,18 +727,12 @@
                                ';i=' + encodeURIComponent(pack(store.categories.icecek)) +
                                ';d=' + encodeURIComponent(pack(store.categories.tatli));
 
-            var targetQRText = "";
-            if (customBase) {
-                targetQRText = customBase + '#m=' + microPayload;
-            } else if (window.location.protocol.indexOf('http') === 0) {
-                targetQRText = window.location.origin + window.location.pathname + '#m=' + microPayload;
-            } else {
-                targetQRText = "MENÜ: " + store.title + "\n" +
-                               "Yiyecekler: " + pack(store.categories.yiyecek) + "\n" +
-                               "İçecekler: " + pack(store.categories.icecek) + "\n" +
-                               "Tatlılar: " + pack(store.categories.tatli) + "\n" +
-                               "MenuMatik - Mimar: Batuhan Bayatlı";
-            }
+            // Eğer siteden girildiyse o anki adresi, yerelden test ediliyorsa direkt Vercel adresini kullanır
+            var baseUrl = (window.location.protocol.indexOf('http') === 0) 
+                ? (window.location.origin + window.location.pathname) 
+                : VERCEL_BASE_URL;
+
+            var targetQRText = baseUrl + '#m=' + microPayload;
 
             var canvas = document.getElementById('qrDisplayCanvas');
             var icon = document.getElementById('qrPlaceholderIcon');
@@ -778,17 +765,14 @@
             var canvas = document.getElementById('qrDisplayCanvas');
             if (!canvas) return;
 
-            // Şık bir çerçeve ve kafe adı ekleyerek matbaaya hazır hale getir
             var exportCanvas = document.createElement('canvas');
             exportCanvas.width = 600;
             exportCanvas.height = 700;
             var ctx = exportCanvas.getContext('2d');
 
-            // Arka Plan
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, 600, 700);
 
-            // Başlık
             ctx.fillStyle = '#0f172a';
             ctx.font = 'bold 34px sans-serif';
             ctx.textAlign = 'center';
@@ -798,15 +782,12 @@
             ctx.font = 'bold 18px monospace';
             ctx.fillText('MENÜYÜ GÖRMEK İÇİN OKUTUNUZ', 300, 110);
 
-            // QR Kod Büyütülerek Çizilir
             ctx.drawImage(canvas, 100, 150, 400, 400);
 
-            // Dipnot / İmzalar
             ctx.fillStyle = '#64748b';
             ctx.font = 'bold 14px sans-serif';
             ctx.fillText('MenuMatik // Altyapı Desteği: Batuhan Bayatlı', 300, 620);
 
-            // İndirme Bağlantısı
             var link = document.createElement('a');
             link.download = (store.title.toLowerCase().replace(/\s+/g, '-') || 'menumatik') + '-qr-kod.png';
             link.href = exportCanvas.toDataURL('image/png');
