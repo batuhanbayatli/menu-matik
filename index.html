@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MenuMatik // Profesyonel QR Menü Mimarı</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+
+    <style>
+        :root {
+            --bg-canvas: #f8fafc;
+            --surface: #ffffff;
+            --brand: #e11d48;
+            --brand-hover: #be123c;
+            --brand-soft: #fff1f2;
+            --text-main: #0f172a;
+            --text-dim: #475569;
+            --text-ghost: #94a3b8;
+            --border-crisp: #e2e8f0;
+            --radius-box: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-canvas);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: clamp(14px, 2.5vw, 36px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .app-shell {
+            width: 100%;
+            max-width: 1240px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* 1. ÜST HERO BAŞLIK */
+        .masthead {
+            text-align: center;
+            background: var(--surface);
+            padding: 28px 20px;
+            border-radius: var(--radius-box);
+            border: 1px solid var(--border-crisp);
+            box-shadow: 0 4px 20px -4px rgba(15, 23, 42, 0.04);
+        }
+
+        .brand-title {
+            font-size: clamp(2.2rem, 4.5vw, 3.4rem);
+            font-weight: 800;
+            color: var(--brand);
+            letter-spacing: -1px;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-sub {
+            color: var(--text-dim);
+            font-size: clamp(0.9rem, 1.2vw, 1.05rem);
+            margin-top: 6px;
+            font-weight: 600;
+        }
+
+        /* 2. GRID YÖNETİM ALANI */
+        .workspace-grid {
+            display: grid;
+            grid-template-columns: 1.3fr 0.95fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 960px) {
+            .workspace-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card-panel {
+            background: var(--surface);
+            border: 1px solid var(--border-crisp);
+            border-radius: var(--radius-box);
+            padding: clamp(18px, 2.2vw, 30px);
+            box-shadow: 0 4px 25px -4px rgba(15, 23, 42, 0.04);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .field-block {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .field-label {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--text-ghost);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .input-text {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1.5px solid var(--border-crisp);
+            border-radius: 10px;
+            font-size: 14.5px;
+            font-weight: 700;
+            color: var(--text-main);
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .input-text:focus {
+            border-color: var(--brand);
+            box-shadow: 0 0 0 4px var(--brand-soft);
+        }
+
+        .cat-nav {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .cat-btn {
+            background: #f8fafc;
+            border: 1.5px solid var(--border-crisp);
+            padding: 12px 8px;
+            border-radius: 10px;
+            font-size: clamp(0.75rem, 1.1vw, 0.9rem);
+            font-weight: 800;
+            cursor: pointer;
+            text-align: center;
+            color: var(--text-dim);
+            transition: all 0.15s ease;
+        }
+
+        .cat-btn.active {
+            background: var(--brand);
+            color: #ffffff;
+            border-color: var(--brand);
+        }
+
+        .quota-banner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-dim);
+            border-bottom: 1px solid var(--border-crisp);
+            padding-bottom: 12px;
+        }
+
+        .quota-badge {
+            background: var(--brand-soft);
+            color: var(--brand);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 12px;
+        }
+
+        /* ÜRÜN LİSTESİ VE DÜZENLEME ALANI */
+        .item-scroll-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 330px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8fafc;
+            border: 1px solid var(--border-crisp);
+            padding: 12px 16px;
+            border-radius: 12px;
+            transition: all 0.2s;
+        }
+
+        .item-row:hover {
+            border-color: #cbd5e1;
+            background: #ffffff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+
+        .item-edit-inline {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .btn-icon-action {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 6px;
+            transition: all 0.15s;
+        }
+
+        .btn-edit { color: #0284c7; }
+        .btn-edit:hover { background: #e0f2fe; }
+        .btn-trash { color: #ef4444; }
+        .btn-trash:hover { background: #fee2e2; }
+
+        .add-cluster {
+            display: grid;
+            grid-template-columns: 2fr 1fr auto;
+            gap: 10px;
+            background: #f8fafc;
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid var(--border-crisp);
+        }
+
+        @media (max-width: 500px) {
+            .add-cluster {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .btn-action-add {
+            background: var(--text-main);
+            color: #ffffff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-action-add:hover {
+            background: #000000;
+        }
+
+        /* SAĞ PANEL: QR ÇIKTI VE İNDİRME */
+        .qr-center-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .qr-image-holder {
+            background: #ffffff;
+            border: 2px dashed var(--border-crisp);
+            border-radius: 20px;
+            padding: 18px;
+            margin: 10px 0;
+            min-height: 240px;
+            min-width: 240px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.02);
+        }
+
+        #qrDisplayCanvas {
+            display: none;
+            border-radius: 10px;
+        }
+
+        .btn-grid-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .btn-pill {
+            background: var(--brand);
+            color: #ffffff;
+            border: none;
+            padding: 14px 18px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-pill:hover {
+            background: var(--brand-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-pill-dark {
+            background: var(--text-main);
+        }
+
+        .btn-pill-dark:hover {
+            background: #000000;
+        }
+
+        .btn-pill-success {
+            background: #059669;
+        }
+
+        .btn-pill-success:hover {
+            background: #047857;
+        }
+
+        /* BÜYÜK REKLAM PANOLARI */
+        .advert-hero-card {
+            background: linear-gradient(135deg, #be123c, #881337);
+            color: #ffffff;
+            border-radius: 18px;
+            padding: 24px 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            text-align: left;
+            box-shadow: 0 12px 30px -5px rgba(190, 18, 60, 0.35);
+            width: 100%;
+        }
+
+        .advert-tag {
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            font-size: 10.5px;
+            font-weight: 800;
+            padding: 4px 12px;
+            border-radius: 20px;
+            width: fit-content;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .advert-title {
+            font-size: 18px;
+            font-weight: 800;
+            line-height: 1.35;
+        }
+
+        .advert-desc {
+            font-size: 13px;
+            color: #fecdd3;
+            line-height: 1.5;
+        }
+
+        .btn-advert-cta {
+            background: #ffffff;
+            color: #be123c;
+            text-decoration: none;
+            padding: 12px 18px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 4px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+        }
+
+        .advert-secondary-card {
+            background: var(--surface);
+            border: 2px solid var(--text-main);
+            border-radius: 18px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            text-align: left;
+            width: 100%;
+        }
+
+        .sec-adv-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sec-adv-desc {
+            font-size: 12.5px;
+            color: var(--text-dim);
+            line-height: 1.45;
+        }
+
+        .sec-adv-btn {
+            color: var(--brand);
+            font-weight: 800;
+            font-size: 12px;
+            text-decoration: underline;
+        }
+
+        /* MODAL ÖNİZLEME */
+        .preview-modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+
+        .preview-modal-window {
+            background: #ffffff;
+            width: 100%;
+            max-width: 440px;
+            max-height: 90vh;
+            border-radius: 24px;
+            overflow-y: auto;
+            padding: 28px 24px;
+            position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-close-modal {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            background: #f1f5f9;
+            border: none;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        /* MÜŞTERİ EKRANI */
+        #customerApp {
+            display: none;
+            width: 100%;
+            max-width: 480px;
+            margin: 0 auto;
+            background: #ffffff;
+            min-height: 100vh;
+            padding: 28px 20px;
+            box-shadow: 0 0 35px rgba(0,0,0,0.06);
+            flex-direction: column;
+            gap: 24px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-shell" id="adminApp">
+        <header class="masthead">
+            <h1 class="brand-title">
+                <i class="fas fa-qrcode"></i> MenuMatik
+            </h1>
+            <p class="brand-sub">Sıfır Sunucu • Sıfır Alan Adı • Düzenlenebilir Kalıcı QR Menü Motoru</p>
+        </header>
+
+        <main class="workspace-grid">
+            <!-- SOL: MENÜ YÖNETİMİ & DÜZENLEME -->
+            <section class="card-panel">
+                <div class="field-block">
+                    <label class="field-label">İşletme / Kafe Adı</label>
+                    <input type="text" id="inputCafeTitle" class="input-text" value="Kadıköy Coffee Co.">
+                </div>
+
+                <div class="field-block">
+                    <label class="field-label">Canlı Web / Yayın Adresiniz (Opsiyonel)</label>
+                    <input type="text" id="inputLiveUrl" class="input-text" placeholder="Örn: https://kullanici.github.io/menumatik/" value="">
+                    <span style="font-size: 11px; color: var(--text-ghost);">Boş bırakılırsa telefonlar için doğrudan metin menü paketi oluşturulur.</span>
+                </div>
+
+                <div class="cat-nav">
+                    <button type="button" class="cat-btn active" id="tabYiyecek" onclick="switchTab('yiyecek')">🍔 Yiyecek (<span id="numYiyecek">0</span>/10)</button>
+                    <button type="button" class="cat-btn" id="tabIcecek" onclick="switchTab('icecek')">☕ İçecek (<span id="numIcecek">0</span>/10)</button>
+                    <button type="button" class="cat-btn" id="tabTatli" onclick="switchTab('tatli')">🍰 Tatlı (<span id="numTatli">0</span>/10)</button>
+                </div>
+
+                <div class="quota-banner">
+                    <span id="activeCategoryTitle">Yiyecek Listesi</span>
+                    <span class="quota-badge">Limit: Kategori Başına 10 Ürün</span>
+                </div>
+
+                <div class="item-scroll-list" id="domItemList"></div>
+
+                <div class="add-cluster">
+                    <input type="text" id="inputItemName" class="input-text" placeholder="Ürün Adı (Örn: Kaşarlı Tost)">
+                    <input type="number" id="inputItemPrice" class="input-text" placeholder="Fiyat ₺">
+                    <button type="button" class="btn-action-add" onclick="addItem()">
+                        <i class="fas fa-plus me-1"></i> Ekle
+                    </button>
+                </div>
+            </section>
+
+            <!-- SAĞ: QR ÇIKTI, İNDİRME & REKLAMLAR -->
+            <aside class="card-panel qr-center-box">
+                <h2 style="font-size: 17px; font-weight: 800;">Masa QR Kodunuz</h2>
+                <p style="font-size: 12.5px; color: var(--text-dim); margin-top: 2px;">Yazdırıp masalarınıza doğrudan koyabilirsiniz.</p>
+
+                <div class="qr-image-holder" id="qrContainer">
+                    <i class="fas fa-qrcode fa-3x" id="qrPlaceholderIcon" style="margin-bottom: 8px; opacity: 0.35;"></i>
+                    <span id="qrPlaceholderTxt" style="font-size: 12px; font-weight: 700; color: var(--text-ghost);">QR oluşturulmayı bekliyor</span>
+                    <canvas id="qrDisplayCanvas" width="220" height="220"></canvas>
+                </div>
+
+                <div class="btn-grid-actions">
+                    <button type="button" class="btn-pill" onclick="generateQR()">
+                        <i class="fas fa-bolt"></i> QR Üret
+                    </button>
+                    <button type="button" class="btn-pill btn-pill-success" id="btnDownloadQr" onclick="downloadQRPng()" style="display: none;">
+                        <i class="fas fa-download"></i> PNG İndir
+                    </button>
+                    <button type="button" class="btn-pill btn-pill-dark" onclick="openPreviewModal()" style="grid-column: span 2;">
+                        <i class="fas fa-eye"></i> Canlı Menüyü Önizle
+                    </button>
+                </div>
+
+                <!-- BÜYÜK REKLAM 01 -->
+                <div class="advert-hero-card" style="margin-top: 6px;">
+                    <span class="advert-tag"><i class="fas fa-gem me-1"></i> PRO SÜRÜM & ÖZEL YAZILIM</span>
+                    <h3 class="advert-title">Menünüzü Sınırların Ötesine Taşıyın!</h3>
+                    <p class="advert-desc">
+                        10 ürün sınırını kaldırmak, sipariş-garson entegrasyonu eklemek, kendi özel alan adınızda (.com) yayınlamak ve işletmenize özel web çözümleri için iletişime geçin.
+                    </p>
+                    <a href="https://www.linkedin.com/in/batuhanbayatlı" target="_blank" class="btn-advert-cta">
+                        <i class="fab fa-linkedin"></i> Batuhan Bayatlı ile İletişime Geç
+                    </a>
+                </div>
+
+                <!-- BÜYÜK REKLAM 02 -->
+                <div class="advert-secondary-card">
+                    <h4 class="sec-adv-title">
+                        <i class="fas fa-terminal" style="color: var(--brand);"></i> bGroup Özel Mimari Çözümler
+                    </h4>
+                    <p class="sec-adv-desc">
+                        FinTech, InsurTech ve kurumsal interaktif web sistemleri mimarı Batuhan Bayatlı tarafından tasarlanmıştır.
+                    </p>
+                    <a href="https://www.linkedin.com/in/batuhanbayatlı" target="_blank" class="sec-adv-btn">
+                        LinkedIn Profilini İnceleyin →
+                    </a>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <!-- MÜŞTERİ ÖNİZLEME PENCERESİ -->
+    <div class="preview-modal-backdrop" id="previewModal">
+        <div class="preview-modal-window">
+            <button type="button" class="btn-close-modal" onclick="closePreviewModal()">✕</button>
+            <div id="modalMenuContent"></div>
+        </div>
+    </div>
+
+    <!-- MÜŞTERİ EKRANI (URL'DEN GİRİLDİĞİNDE) -->
+    <div id="customerApp"></div>
+
+    <script>
+        var store = {
+            title: "Kadıköy Coffee Co.",
+            categories: {
+                yiyecek: [
+                    { name: "Kaşarlı Tost", price: "120" },
+                    { name: "Kruvasan Sandviç", price: "165" }
+                ],
+                icecek: [
+                    { name: "Filtre Kahve", price: "95" },
+                    { name: "Flat White", price: "115" }
+                ],
+                tatli: [
+                    { name: "San Sebastian", price: "185" }
+                ]
+            },
+            currentTab: 'yiyecek',
+            editingIdx: -1 // Düzenleme modu indeksi
+        };
+
+        var qrInstance = null;
+
+        function switchTab(tabKey) {
+            store.currentTab = tabKey;
+            store.editingIdx = -1; // Sekme değişince düzenlemeyi kapat
+            var tabs = ['yiyecek', 'icecek', 'tatli'];
+            for (var i = 0; i < tabs.length; i++) {
+                var el = document.getElementById('tab' + tabs[i].charAt(0).toUpperCase() + tabs[i].slice(1));
+                if (el) el.className = (tabs[i] === tabKey) ? 'cat-btn active' : 'cat-btn';
+            }
+            var titleEl = document.getElementById('activeCategoryTitle');
+            if (titleEl) {
+                if (tabKey === 'yiyecek') titleEl.innerText = 'Yiyecek Listesi';
+                if (tabKey === 'icecek') titleEl.innerText = 'İçecek Listesi';
+                if (tabKey === 'tatli') titleEl.innerText = 'Tatlı Listesi';
+            }
+            renderList();
+        }
+
+        function renderList() {
+            var container = document.getElementById('domItemList');
+            if (!container) return;
+            container.innerHTML = '';
+            var list = store.categories[store.currentTab];
+
+            for (var i = 0; i < list.length; i++) {
+                var item = list[i];
+                var row = document.createElement('div');
+                row.className = 'item-row';
+
+                // Eğer düzenleme modundaysa inputları aç
+                if (store.editingIdx === i) {
+                    row.innerHTML = 
+                        '<div class="item-edit-inline">' +
+                            '<input type="text" id="editNameInput" class="input-text" style="padding: 8px 12px; font-size: 13.5px;" value="' + item.name + '">' +
+                            '<input type="number" id="editPriceInput" class="input-text" style="width: 90px; padding: 8px 12px; font-size: 13.5px;" value="' + item.price + '">' +
+                            '<button type="button" class="btn-icon-action" style="color: #059669;" onclick="saveEdit(' + i + ')" title="Kaydet"><i class="fas fa-check fa-lg"></i></button>' +
+                            '<button type="button" class="btn-icon-action" style="color: #64748b;" onclick="cancelEdit()" title="İptal"><i class="fas fa-times fa-lg"></i></button>' +
+                        '</div>';
+                } else {
+                    row.innerHTML = 
+                        '<span class="item-meta-name">' + item.name + '</span>' +
+                        '<div style="display: flex; align-items: center; gap: 8px;">' +
+                            '<span class="item-meta-price">' + item.price + ' ₺</span>' +
+                            '<button type="button" class="btn-icon-action btn-edit" onclick="startEdit(' + i + ')" title="Düzenle"><i class="fas fa-pen-to-square"></i></button>' +
+                            '<button type="button" class="btn-icon-action btn-trash" onclick="deleteItem(' + i + ')" title="Sil"><i class="fas fa-trash-can"></i></button>' +
+                        '</div>';
+                }
+
+                container.appendChild(row);
+            }
+
+            document.getElementById('numYiyecek').innerText = store.categories.yiyecek.length;
+            document.getElementById('numIcecek').innerText = store.categories.icecek.length;
+            document.getElementById('numTatli').innerText = store.categories.tatli.length;
+        }
+
+        function addItem() {
+            var nameEl = document.getElementById('inputItemName');
+            var priceEl = document.getElementById('inputItemPrice');
+            if (!nameEl || !priceEl) return;
+
+            var nameVal = nameEl.value.trim();
+            var priceVal = priceEl.value.trim();
+
+            if (!nameVal || !priceVal) {
+                alert("Lütfen ürün adı ve fiyat giriniz.");
+                return;
+            }
+
+            if (store.categories[store.currentTab].length >= 10) {
+                alert("Ücretsiz planda her kategori için en fazla 10 ürün ekleyebilirsiniz. Sınırsız sürüm için Batuhan Bayatlı ile iletişime geçin.");
+                return;
+            }
+
+            store.categories[store.currentTab].push({ name: nameVal, price: priceVal });
+            nameEl.value = '';
+            priceEl.value = '';
+            nameEl.focus();
+            renderList();
+        }
+
+        function deleteItem(idx) {
+            store.categories[store.currentTab].splice(idx, 1);
+            if (store.editingIdx === idx) store.editingIdx = -1;
+            renderList();
+        }
+
+        function startEdit(idx) {
+            store.editingIdx = idx;
+            renderList();
+            setTimeout(function() {
+                var el = document.getElementById('editNameInput');
+                if (el) el.focus();
+            }, 50);
+        }
+
+        function cancelEdit() {
+            store.editingIdx = -1;
+            renderList();
+        }
+
+        function saveEdit(idx) {
+            var nameEl = document.getElementById('editNameInput');
+            var priceEl = document.getElementById('editPriceInput');
+            if (!nameEl || !priceEl) return;
+
+            var newName = nameEl.value.trim();
+            var newPrice = priceEl.value.trim();
+
+            if (!newName || !newPrice) {
+                alert("Ürün adı ve fiyat boş bırakılamaz.");
+                return;
+            }
+
+            store.categories[store.currentTab][idx] = { name: newName, price: newPrice };
+            store.editingIdx = -1;
+            renderList();
+        }
+
+        // ULTRA KOMPAKT QR MOTORU
+        function generateQR() {
+            var cafeInput = document.getElementById('inputCafeTitle');
+            store.title = cafeInput ? cafeInput.value.trim() : "Kafe Menüsü";
+
+            var liveUrlInput = document.getElementById('inputLiveUrl');
+            var customBase = liveUrlInput ? liveUrlInput.value.trim() : "";
+
+            function pack(arr) {
+                return arr.map(function(x) { return x.name.replace(/[:;,]/g, '') + ':' + x.price; }).join(',');
+            }
+
+            var microPayload = 't=' + encodeURIComponent(store.title) +
+                               ';y=' + encodeURIComponent(pack(store.categories.yiyecek)) +
+                               ';i=' + encodeURIComponent(pack(store.categories.icecek)) +
+                               ';d=' + encodeURIComponent(pack(store.categories.tatli));
+
+            var targetQRText = "";
+            if (customBase) {
+                targetQRText = customBase + '#m=' + microPayload;
+            } else if (window.location.protocol.indexOf('http') === 0) {
+                targetQRText = window.location.origin + window.location.pathname + '#m=' + microPayload;
+            } else {
+                targetQRText = "MENÜ: " + store.title + "\n" +
+                               "Yiyecekler: " + pack(store.categories.yiyecek) + "\n" +
+                               "İçecekler: " + pack(store.categories.icecek) + "\n" +
+                               "Tatlılar: " + pack(store.categories.tatli) + "\n" +
+                               "MenuMatik - Mimar: Batuhan Bayatlı";
+            }
+
+            var canvas = document.getElementById('qrDisplayCanvas');
+            var icon = document.getElementById('qrPlaceholderIcon');
+            var text = document.getElementById('qrPlaceholderTxt');
+            var btnDownload = document.getElementById('btnDownloadQr');
+
+            if (typeof QRious !== 'undefined') {
+                if (!qrInstance) {
+                    qrInstance = new QRious({
+                        element: canvas,
+                        size: 220,
+                        value: targetQRText,
+                        level: 'L'
+                    });
+                } else {
+                    qrInstance.value = targetQRText;
+                }
+
+                canvas.style.display = 'block';
+                if (icon) icon.style.display = 'none';
+                if (text) text.style.display = 'none';
+                if (btnDownload) btnDownload.style.display = 'inline-flex';
+            } else {
+                alert("QR kütüphanesi yüklenemedi. İnternet bağlantınızı kontrol edin.");
+            }
+        }
+
+        // MATBAA İÇİN YÜKSEK ÇÖZÜNÜRLÜKLÜ PNG İNDİRME
+        function downloadQRPng() {
+            var canvas = document.getElementById('qrDisplayCanvas');
+            if (!canvas) return;
+
+            // Şık bir çerçeve ve kafe adı ekleyerek matbaaya hazır hale getir
+            var exportCanvas = document.createElement('canvas');
+            exportCanvas.width = 600;
+            exportCanvas.height = 700;
+            var ctx = exportCanvas.getContext('2d');
+
+            // Arka Plan
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, 600, 700);
+
+            // Başlık
+            ctx.fillStyle = '#0f172a';
+            ctx.font = 'bold 34px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(store.title, 300, 70);
+
+            ctx.fillStyle = '#e11d48';
+            ctx.font = 'bold 18px monospace';
+            ctx.fillText('MENÜYÜ GÖRMEK İÇİN OKUTUNUZ', 300, 110);
+
+            // QR Kod Büyütülerek Çizilir
+            ctx.drawImage(canvas, 100, 150, 400, 400);
+
+            // Dipnot / İmzalar
+            ctx.fillStyle = '#64748b';
+            ctx.font = 'bold 14px sans-serif';
+            ctx.fillText('MenuMatik // Altyapı Desteği: Batuhan Bayatlı', 300, 620);
+
+            // İndirme Bağlantısı
+            var link = document.createElement('a');
+            link.download = (store.title.toLowerCase().replace(/\s+/g, '-') || 'menumatik') + '-qr-kod.png';
+            link.href = exportCanvas.toDataURL('image/png');
+            link.click();
+        }
+
+        function openPreviewModal() {
+            var cafeInput = document.getElementById('inputCafeTitle');
+            store.title = cafeInput ? cafeInput.value.trim() : "Kafe Menüsü";
+
+            var contentEl = document.getElementById('modalMenuContent');
+            renderCustomerMenu(contentEl, store);
+            document.getElementById('previewModal').style.display = 'flex';
+        }
+
+        function closePreviewModal() {
+            document.getElementById('previewModal').style.display = 'none';
+        }
+
+        function renderCustomerMenu(contentEl, data) {
+            var out = '';
+            out += '<div style="text-align: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 18px; margin-bottom: 20px;">' +
+                   '<h1 style="font-size: 24px; font-weight: 800; color: #0f172a;">' + data.title + '</h1>' +
+                   '<span style="display: inline-block; margin-top: 6px; font-size: 11px; background: #ffe4e6; color: #e11d48; padding: 4px 12px; border-radius: 20px; font-weight: 800;">DİJİTAL MENÜ</span>' +
+                   '</div>';
+
+            out += buildMenuSection('🍔 Yiyecekler', data.categories.yiyecek);
+            out += buildMenuSection('☕ İçecekler', data.categories.icecek);
+            out += buildMenuSection('🍰 Tatlılar', data.categories.tatli);
+
+            out += '<div style="margin-top: 28px; background: linear-gradient(135deg, #be123c, #881337); border-radius: 16px; padding: 22px 20px; color: #ffffff; text-align: center;">' +
+                   '<span style="background: rgba(255, 255, 255, 0.2); font-size: 10px; font-weight: 800; padding: 3px 10px; border-radius: 20px; text-transform: uppercase;">MenuMatik Altyapısı</span>' +
+                   '<h3 style="font-size: 17px; font-weight: 800; margin: 8px 0 4px 0;">Kendi İşletmenizin Menüsünü Oluşturun!</h3>' +
+                   '<p style="font-size: 12px; color: #fecdd3; line-height: 1.45; margin-bottom: 12px;">' +
+                   'Bu menü MenuMatik ile ücretsiz oluşturulmuştur. Sınırsız ürün, sipariş paneli ve restoranınıza özel yazılım sistemleri için görüşün.' +
+                   '</p>' +
+                   '<a href="https://www.linkedin.com/in/batuhanbayatlı" target="_blank" style="background: #ffffff; color: #be123c; text-decoration: none; padding: 10px 18px; border-radius: 8px; font-size: 12px; font-weight: 800; display: inline-flex; align-items: center; gap: 6px;">' +
+                   '<i class="fab fa-linkedin"></i> Mimar: Batuhan Bayatlı' +
+                   '</a>' +
+                   '</div>';
+
+            contentEl.innerHTML = out;
+        }
+
+        function buildMenuSection(title, list) {
+            if (!list || list.length === 0) return '';
+            var html = '<div style="margin-bottom: 20px;"><h2 style="font-size: 15px; font-weight: 800; color: #e11d48; margin-bottom: 8px; border-bottom: 1.5px solid #ffe4e6; padding-bottom: 4px;">' + title + '</h2><div>';
+            for (var i = 0; i < list.length; i++) {
+                html += '<div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #e2e8f0; padding: 10px 0;">' +
+                        '<span style="font-size: 14.5px; font-weight: 700; color: #0f172a;">' + list[i].name + '</span>' +
+                        '<span style="font-family: \'JetBrains Mono\', monospace; font-size: 15px; font-weight: 800; color: #e11d48;">' + list[i].price + ' ₺</span>' +
+                        '</div>';
+            }
+            html += '</div></div>';
+            return html;
+        }
+
+        function checkCustomerView() {
+            if (window.location.hash.indexOf('#m=') !== -1) {
+                try {
+                    var raw = window.location.hash.split('#m=')[1];
+                    var parts = raw.split(';');
+                    var parsed = { title: '', categories: { yiyecek: [], icecek: [], tatli: [] } };
+
+                    parts.forEach(function(p) {
+                        var kv = p.split('=');
+                        if (kv[0] === 't') parsed.title = decodeURIComponent(kv[1]);
+                        if (kv[0] === 'y') parsed.categories.yiyecek = unpack(decodeURIComponent(kv[1]));
+                        if (kv[0] === 'i') parsed.categories.icecek = unpack(decodeURIComponent(kv[1]));
+                        if (kv[0] === 'd') parsed.categories.tatli = unpack(decodeURIComponent(kv[1]));
+                    });
+
+                    function unpack(str) {
+                        if (!str) return [];
+                        return str.split(',').map(function(item) {
+                            var pair = item.split(':');
+                            return { name: pair[0], price: pair[1] };
+                        });
+                    }
+
+                    document.getElementById('adminApp').style.display = 'none';
+                    var cApp = document.getElementById('customerApp');
+                    cApp.style.display = 'flex';
+                    renderCustomerMenu(cApp, parsed);
+                    return true;
+                } catch(e) {
+                    console.error("Hata:", e);
+                }
+            }
+            return false;
+        }
+
+        window.onload = function() {
+            if (!checkCustomerView()) {
+                renderList();
+                var priceInput = document.getElementById('inputItemPrice');
+                if (priceInput) {
+                    priceInput.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter') addItem();
+                    });
+                }
+            }
+        };
+    </script>
+</body>
+</html>
