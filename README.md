@@ -1,6 +1,6 @@
 <div align="center">
 
-# ⚡ menu-matik // NEXT-GEN QR ECOSYSTEM
+# ⚡ Menu-Matik // NEXT-GEN QR ECOSYSTEM
 
 ### *Sıfır Sunucu. Sıfır Veritabanı. Sıfır Aylık Maliyet. Sonsuz Hız.*
 
