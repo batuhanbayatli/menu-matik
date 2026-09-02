@@ -1,4 +1,4 @@
-# 📱 menu-matik // Akıllı ve Sıfır Maliyetli QR Menü Motoru
+# 📱 Menu-Matik // Akıllı ve Sıfır Maliyetli QR Menü Motoru
 
 > Kafe, restoran ve butik işletmeler için veritabanı, sunucu veya aylık abonelik maliyeti gerektirmeyen **%100 istemci taraflı (Client-Side)** dijital QR menü mimarisi.
 
